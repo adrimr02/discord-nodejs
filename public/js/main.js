@@ -2,20 +2,29 @@ const chatForm = document.getElementById('chat-form');
 const chatMessages = document.querySelector('.chat-messages');
 const roomName = document.getElementById('room-name');
 const userList = document.getElementById('users');
-
+var user;
 //Get username and room from url
-const {username, room} = Qs.parse(location.search, {
+const { room } = Qs.parse(location.search, {
   ignoreQueryPrefix: true
 });
 
 const socket = io();
 
-socket.emit('join-chatroom', {username, room});
+socket.emit('join-chatroom', { room });
+
+//Receives previous messages from server
+socket.on('previous-data', (data) => {
+  user = data.user;
+  const messages = data.messages;
+  if (messages && messages.length > 0) {
+    messages.forEach(message => outputMessage(message));
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+});
 
 //Receives a message from server
 socket.on('message', message => {
   outputMessage(message);
-
   chatMessages.scrollTop = chatMessages.scrollHeight;
 });
 
@@ -42,7 +51,7 @@ function outputMessage(message) {
   const div = document.createElement('div');
   div.classList.add('message');
   div.innerHTML = `
-    <p class="meta">${message.username} <span>${message.time}</span></p>
+    <p class="meta">${message.authorId=== user.dbId ? 'Tú' : message.authorName} <span>${message.postedAt}</span></p>
     <p class="text">${message.text}</p>
   `;
 
@@ -56,7 +65,6 @@ function outputRoomName(room) {
 
 //Add user list to DOM
 function outputUsers(users) {
-  console.log(users);
   userList.innerHTML = '';
   users.forEach(user => {
     const li = document.createElement('li');
@@ -70,6 +78,6 @@ document.getElementById('leave-btn').addEventListener('click', e => {
   e.preventDefault();
   const leaveRoom = confirm('¿Estas seguro de que quieres salir?');
   if (leaveRoom) {
-    window.location = '../index.html';
+    window.location = '/rooms';
   }
 });
