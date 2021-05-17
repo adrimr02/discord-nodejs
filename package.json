@@ -4,7 +4,7 @@
   "description": "Realtime chat with rooms",
   "main": "app.js",
   "scripts": {
-    "start": "node index",
+    "start": "node app",
     "dev": "set DEBUG=app:* && nodemon index.js --config"
   },
   "author": "Adrian Martinez",
